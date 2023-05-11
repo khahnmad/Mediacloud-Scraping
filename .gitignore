@@ -1,3 +1,4 @@
 /.env
 /OLD_Medicloud_query/
 /query_mediacloud/output/testing.json
+.gitignore
