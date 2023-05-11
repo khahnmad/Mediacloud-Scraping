@@ -1,4 +1,4 @@
-from scraping_scripts import hard_coded_errors as e
+from scraping_scripts.scraping_support_scripts import hard_coded_errors as e
 import re
 import json
 from lxml import etree

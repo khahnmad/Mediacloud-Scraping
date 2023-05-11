@@ -1,6 +1,6 @@
 import shared_functions as sf
 
-from scraping_scripts import scraping_support_functions as ss
+from scraping_scripts.scraping_support_scripts import scraping_support_functions as ss
 
 import random
 import time
@@ -72,12 +72,12 @@ def scrape_urls(data:list, english_only:bool):
         # Extract article text
         obj['text'] = read_url(obj['url'])
 
-    sf.export_as_json('scraped_text.json',data)
+    sf.export_as_json('output/scraped_text.json',data)
+
 
 if __name__ == '__main__':
     # Import sample urls from the mediacloud query
-    # urls = sf.import_json_content(str(sf.repo_loc / 'query_mediacloud/output/kentucky_200363050.json'))
-    urls = sf.import_json_content(str(sf.repo_loc / 'query_mediacloud/output/testing.json'))
+    urls = sf.import_json_content(str(sf.repo_loc / 'query_mediacloud/output/kentucky_200363050.json'))
 
     # Scrape the urls
     text = scrape_urls(urls, english_only=True)
