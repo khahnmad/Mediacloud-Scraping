@@ -6,7 +6,6 @@ INPUT:
     - collection id
 
 OUTPUT: All stories (urls) from MediaCloud via the Wayback Machine that meet these parameters
-
 """
 # Imports
 from waybacknews.searchapi import SearchApiClient
