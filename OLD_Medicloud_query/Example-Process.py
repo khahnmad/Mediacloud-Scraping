@@ -1,4 +1,4 @@
-import mediacloud_collection as mf
+from OLD_Medicloud_query import mediacloud_collection as mf
 
 """
 First, gather urls using the MediaCloud API
