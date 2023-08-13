@@ -132,3 +132,23 @@ def updateTask(db, id: str, values: dict = {}, result={}):
     }
     r = db.articles.update_one(filter, values)
     return r
+
+# --------------------------------- Statistics --------------------------------
+
+
+def countProcessingStatus(db):
+    """Returns list of processing status and corresponding document count"""
+    group = {"$group": {"_id": "$status", "count": {"$sum": 1}}}
+    sort = {"$sort": {"count": -1}}
+    query = [group, sort]
+    results = db.articles.aggregate(query)
+    return list(results)
+
+
+def countStatusCodes(db):
+    """Returns list of http status codes and corresponding document count"""
+    group = {"$group": {"_id": "$scraping_result.status_code", "count": {"$sum": 1}}}
+    sort = {"$sort": {"count": -1}}
+    query = [group, sort]
+    results = db.articles.aggregate(query)
+    return list(results)
