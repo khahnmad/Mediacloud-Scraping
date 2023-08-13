@@ -26,25 +26,27 @@ class Article(BaseModel):
 
     # -- Mediacloud Fields --
 
-    ap_syndicated: bool
-    collect_date: str
+    ap_syndicated: Optional[bool]
+    collect_date: Optional[str]
     feeds: Optional[str] = None
-    guid: str
-    lang: str = "unspecified"
-    media_id: int
-    media_name: str
-    media_url: str
-    processed_stories_id: int
+    guid: Optional[str]
+    lang: Optional[str] = "unspecified"
+    media_id: Optional[int]
+    media_name: Optional[str]
+    media_url: Optional[str]
+    processed_stories_id: Optional[int]
     publish_date: Optional[str] = None
-    stories_id: int
-    story_tags: List[dict] = []
-    title: str
-    url: str
+    stories_id: Optional[int]
+    story_tags: Optional[List[dict]] = []
+    title: Optional[str]
+    url: Optional[str]
     word_count: Optional[int] = None
-    metadata: Metadata
+    metadata: Optional[Metadata]
 
     # -- Additional Fields --
     batch_id: int = Field(description="Batch identifier")
+    imported_from: str = Field(
+        default="unspecified", description="Imported from this file")
     imported_at: datetime = Field(default_factory=datetime.now)
     scraping_result: Optional[ScrapingResult] = Field(
         default=None, description="Scraping result")

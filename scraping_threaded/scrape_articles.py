@@ -55,7 +55,7 @@ def processTasks(id, tasks, logger, db, fs, timeout):
 
     # Initiate scraper
     logger.info(f"Worker {id} started ...")
-    scraper = DefaultScraper(str(id), logger, timeout=5)
+    scraper = DefaultScraper(str(id), logger, timeout = timeout)
 
     # Process tasks
     for task_id, task in enumerate(tasks):
@@ -86,7 +86,8 @@ def processTasks(id, tasks, logger, db, fs, timeout):
                        values={'status': status},
                        result=r.model_dump())
 
-            time.sleep(timeout)
+            time.sleep(2)
+
             logger.info(
                 f"Worker {id:2}: [{str(r.status_code)}] [{task_id}/{len(tasks)}] {str(r.target_url)}")
 
@@ -104,8 +105,8 @@ def processTasks(id, tasks, logger, db, fs, timeout):
 @click.command()
 @click.option("--path_logfile", default="logs.log", help="Logfile location")
 @click.option("--workers", default=4, help="Number of threads used for scraping")
-@click.option("--timeout", default=1, help="Time give for the request in seconds")
-@click.option("--limit", default=100, help="Only scraping first n urls (0 equals no limit)")
+@click.option("--timeout", default=5, help="Time give for the request in seconds")
+@click.option("--limit", default=1000, help="Only scraping first n urls (0 equals no limit)")
 @click.option('--status', default="UNPROCESSED", help="Any status (FAILED, UNPROCESSED, etc.)")
 @click.option("--max_retries", default=5, help="Consider only URLs which were scraped less than n times (0 to force)")
 @click.option("--batch", default="last", help="all, first last, or a number indicating the batch")

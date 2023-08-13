@@ -10,33 +10,19 @@
 from time import perf_counter
 import pymongo as pm
 import click
+from utils.database import *
 
 # ================================= MAIN ================================
 
 # fmt: off
 @click.command()
-@click.option("-a", "--connection_string", default="mongodb://localhost:27017/", help="MongoDB connection string")
-@click.option("-n", "--database_name", default="articlesDB", help="Database name")
-@click.option("-p", "--purge", default=False, help="Drop existing database")
-def main(connection_string, database_name, purge):
+def main():
 # fmt: on
-
-    if purge:
-        click.confirm(
-            "Are you sure you want to delete all content in the database?", abort=True)
 
     timer_start = perf_counter()
 
-    # Connect to Database
-    conn = pm.MongoClient(connection_string)
-    db = conn[database_name]
-
-    # ------------------- Reset Database -------------------
-
-    # Purge existing database
-    if bool(purge):
-        conn.drop_database(database_name)
-        print("Database dropped!")
+    # Connect to database
+    _, db = getConnection(use_dotenv=True)
 
     # ------------------- Collections -------------------
 
@@ -53,7 +39,8 @@ def main(connection_string, database_name, purge):
 
     db.articles.create_index('batch_id', name='index_articles_batch_id')
     db.articles.create_index('media_name', name='index_articles_media_name')
-    db.articles.create_index([("status", pm.TEXT)])
+    db.articles.create_index([("status", pm.TEXT)],
+                             name='index_articles_status')
 
     # List all collections
     print("Collections in DB:", db.list_collection_names())
