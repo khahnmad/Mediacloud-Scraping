@@ -1,12 +1,12 @@
-from scraping_scripts.scraping_support_scripts import hard_coded_errors as e
+from scraping_support_scripts import hard_coded_errors as e
 import re
 import json
 from lxml import etree
 
 
-def check_scrapability(url:str):
+def check_scrapability(url: str):
     # For urls that will never be able to be scraped
-    error = True # returns true if the url is not any of the ones listed below
+    error = True  # returns true if the url is not any of the ones listed below
 
     for item in e.n_scrapable_url_errors['Website is no longer maintained']:
         if item in url:
@@ -44,20 +44,20 @@ def check_soup_validity(low_soup_text: str) -> str:
     for f in e.soup_contents_text_errors['403 Forbidden']:
         if f in low_soup_text:
             error = 'ERROR: 403 Forbidden'
-    if low_soup_text=='forbidden' or low_soup_text=='403':
+    if low_soup_text == 'forbidden' or low_soup_text == '403':
         error = 'ERROR: 403 Forbidden'
 
-    if 'Looks like something went wrong.'.lower() == low_soup_text or 'Something went wrong. Wait a moment and try again.'.lower()==low_soup_text:
+    if 'Looks like something went wrong.'.lower() == low_soup_text or 'Something went wrong. Wait a moment and try again.'.lower() == low_soup_text:
         error = 'ERROR: 404 Page not found'
-    if ' BLACKLISTED NEWS FAVORITES'.lower()==low_soup_text:
+    if ' BLACKLISTED NEWS FAVORITES'.lower() == low_soup_text:
         error = 'ERROR: 404 Page not found'
     for n in e.soup_contents_text_errors['404 Page not found']:
         if n in low_soup_text:
             error = 'ERROR: 404 Page not found'
-    if low_soup_text=='not found':
-        error =  'ERROR: 404 Page not found'
+    if low_soup_text == 'not found':
+        error = 'ERROR: 404 Page not found'
 
-    if low_soup_text=='not acceptable':
+    if low_soup_text == 'not acceptable':
         error = 'ERROR: 406 Not Acceptable'
     if '406 not acceptable' in low_soup_text:
         error = 'ERROR: 406 Not Acceptable'
@@ -83,11 +83,11 @@ def check_soup_validity(low_soup_text: str) -> str:
         if item in low_soup_text:
             error = "ERROR: Article not found"
 
-    if 'blocked your ip' in low_soup_text or low_soup_text=='too many requests':
+    if 'blocked your ip' in low_soup_text or low_soup_text == 'too many requests':
         error = 'ERROR: Blocked from website'
     for b in e.soup_contents_text_errors['Blocked from website']:
         if b in low_soup_text:
-            error='ERROR: Blocked from website'
+            error = 'ERROR: Blocked from website'
 
     if 'client-side exception' in low_soup_text:
         error = "ERROR: Client-Side Exception"
@@ -117,15 +117,16 @@ def check_soup_validity(low_soup_text: str) -> str:
     return error
 
 
-
 def do_alternative_scraping(url, response, soup):
-    app_json_art_body = ['qz.com', 'newtimes.com.rw', 'newtimes.co.rw', 'newsweek.com', 'scmp.com']
+    app_json_art_body = ['qz.com', 'newtimes.com.rw',
+                         'newtimes.co.rw', 'newsweek.com', 'scmp.com']
     for a in app_json_art_body:
         if a in url:
             if 'Forbidden' in response:
                 return 'ERROR: 403 Forbidden'
             tree = etree.HTML(response)
-            json_type_elts = tree.xpath('//script[@type="application/ld+json"]')
+            json_type_elts = tree.xpath(
+                '//script[@type="application/ld+json"]')
             for jte in json_type_elts:
                 if 'articleBody' in jte.text:
                     json_obj = json.loads(jte.text)
@@ -136,15 +137,15 @@ def do_alternative_scraping(url, response, soup):
                         return 'ERROR: No text gathered'
             paragraphs = soup.find_all('p')
             stripped_paragraph = [tag.get_text().strip() for tag in paragraphs]
-            if len(stripped_paragraph)>0:
+            if len(stripped_paragraph) > 0:
                 return " ".join(stripped_paragraph)
-            return  'ERROR: No text gathered'
+            return 'ERROR: No text gathered'
     if 'miamiherald.typepad.com' in url:
-        div_elts = soup.find_all('div',attrs={'id':"story-content"})
+        div_elts = soup.find_all('div', attrs={'id': "story-content"})
         stripped = [tag.get_text().strip() for tag in div_elts]
         return " ".join(stripped)
     if 'dailywire.com' in url:
-        div_elts = soup.find_all('div',attrs={'id':'post-body-text'})
+        div_elts = soup.find_all('div', attrs={'id': 'post-body-text'})
         stripped = [tag.get_text().strip() for tag in div_elts]
         return " ".join(stripped)
     if 'nationalreview.com' in url:
@@ -153,9 +154,11 @@ def do_alternative_scraping(url, response, soup):
         json_type_elts = tree.xpath('//script[@type="text/javascript"]')
 
         # Original version: This has worked at least three times
-        js_var = re.findall(r'nr.headless.preloadedData = .*;', response) # debug
+        js_var = re.findall(
+            r'nr.headless.preloadedData = .*;', response)  # debug
         if len(js_var) > 0:
-            js_var_data = js_var[0].replace('nr.headless.preloadedData = ', '')[:-1]
+            js_var_data = js_var[0].replace(
+                'nr.headless.preloadedData = ', '')[:-1]
             json_obj = json.loads(js_var_data)
             first_key = list(json_obj.keys())[0]
             content = json_obj[first_key]['body']['queried_object']['content']['rendered']
@@ -165,15 +168,16 @@ def do_alternative_scraping(url, response, soup):
         return 'ERROR: No text fathered'
     if 'columbiaspectator.com' in url:
         # Try tree version #debug
-        tree =etree.HTML(response)
+        tree = etree.HTML(response)
 
         # Old version
         fusion_global_content = re.findall(r'Fusion\.globalContent=.*?};',
                                            response)  # find the data given the variable name
         fg_contents = fusion_global_content[0].replace('Fusion.globalContent=', '')[
-                      :-1]  # get the contents of the variables
+            :-1]  # get the contents of the variables
         json_vers = json.loads(fg_contents)  # make it a json obj
-        content_elts = json_vers['content_elements']  # get the relevant section of the json obj
+        # get the relevant section of the json obj
+        content_elts = json_vers['content_elements']
         text = []
         for item in content_elts:
             if item['type'] == 'text':
@@ -185,35 +189,41 @@ def do_alternative_scraping(url, response, soup):
         json_type_elts = tree.xpath('//script[contains(text(),"JSON")]')
         for jte in json_type_elts:
             if 'pgStoryZeroJSON' in jte.text:
-                cleaned_json = jte.text.replace('pgStoryZeroJSON = ', '').replace('\n', '')
+                cleaned_json = jte.text.replace(
+                    'pgStoryZeroJSON = ', '').replace('\n', '')
                 try:
                     json_version = json.loads(cleaned_json)
                     article_body = json_version['articles'][0]['body']
                     soup_obj = bs(article_body, 'html.parser')
-                    text= soup_obj.get_text().strip()
-                    return text # works, 11
+                    text = soup_obj.get_text().strip()
+                    return text  # works, 11
                 except json.decoder.JSONDecodeError:
                     article_regex = re.findall(r'body": ".*?",', cleaned_json)
-                    cleaned_article_regex = article_regex[0].replace('body": "','').replace('"','')
+                    cleaned_article_regex = article_regex[0].replace(
+                        'body": "', '').replace('"', '')
                     soup_obj = bs(cleaned_article_regex, 'html.parser')
                     text = soup_obj.get_text().strip()
                     return text
 
     if 'blacknews.com/news' in url:
-        div_elts = soup.find_all('div', attrs={'class':"post-body entry-content"})
+        div_elts = soup.find_all(
+            'div', attrs={'class': "post-body entry-content"})
         stripped = [tag.get_text().strip() for tag in div_elts]
         return " ".join(stripped)
 
     if 'thepoliticalinsider' in url:
-        blog_div_elts = soup.find_all('div', attrs={'class': 'text article-body font-default font-size-med'})
+        blog_div_elts = soup.find_all(
+            'div', attrs={'class': 'text article-body font-default font-size-med'})
         stripped = [tag.get_text().strip() for tag in blog_div_elts]
-        if len(stripped)>0:
+        if len(stripped) > 0:
             return " ".join(stripped)
-        script_variable =  re.findall(r'class="yoast-schema-graph">[\S\s]*?<\/script>', response)
+        script_variable = re.findall(
+            r'class="yoast-schema-graph">[\S\s]*?<\/script>', response)
         try:
-            script_data = script_variable[0].replace('class="yoast-schema-graph">', '').replace('</script>', '')
+            script_data = script_variable[0].replace(
+                'class="yoast-schema-graph">', '').replace('</script>', '')
             json_option = json.loads(script_data)
-            dv=True # Todo: finsih this
+            dv = True  # Todo: finsih this
         except IndexError:
             return "ERROR: Scraping error during JSON conversion"
 
@@ -230,9 +240,9 @@ def do_alternative_scraping(url, response, soup):
     if 'tampabay.com' in url:
         tree = etree.HTML(response)
         json_elts = tree.xpath('//script[contains(@type,"json")]')
-        return 'ERROR: No text gathered' # Doesnt seem to work
+        return 'ERROR: No text gathered'  # Doesnt seem to work
     if 'newsday.com' in url:
-        tree =  etree.HTML(response)
+        tree = etree.HTML(response)
         json_elts = tree.xpath('//script[contains(@type,"json")]')
         try:
             for elt in json_elts:
@@ -252,7 +262,8 @@ def do_alternative_scraping(url, response, soup):
         alt_elts = soup.find_all('div', attrs={'data-articlebody': '1'})
         stripped = [tag.get_text().strip() for tag in alt_elts]
         if len(stripped) < 1:
-            blog_div_elts = soup.find_all('div', attrs={'class': 'main-content single-article-content'})
+            blog_div_elts = soup.find_all(
+                'div', attrs={'class': 'main-content single-article-content'})
             stripped = [tag.get_text().strip() for tag in blog_div_elts]
             if len(stripped) < 1:
                 return 'ERROR: No text gathered'
